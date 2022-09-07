@@ -1,0 +1,114 @@
+--- a/arch/arm/lib/Makefile
++++ b/arch/arm/lib/Makefile
+@@ -44,7 +44,7 @@ $(obj)/csumpartialcopy.o:	$(obj)/csumpar
+ $(obj)/csumpartialcopyuser.o:	$(obj)/csumpartialcopygeneric.S
+ 
+ ifeq ($(CONFIG_KERNEL_MODE_NEON),y)
+-  NEON_FLAGS			:= -march=armv7-a -mfloat-abi=softfp -mfpu=neon
++  NEON_FLAGS			:= -mcpu=cortex-a15 -mfloat-abi=softfp -mfpu=neon
+   CFLAGS_xor-neon.o		+= $(NEON_FLAGS)
+   obj-$(CONFIG_XOR_BLOCKS)	+= xor-neon.o
+ endif
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -100,7 +100,7 @@ tune-$(CONFIG_CPU_V6K)		=-mtune=arm1136j
+ tune-y := $(tune-y)
+ 
+ ifeq ($(CONFIG_AEABI),y)
+-CFLAGS_ABI	:=-mabi=aapcs-linux -mfpu=vfp
++CFLAGS_ABI	:=-mabi=aapcs-linux -mfpu=vfpv4
+ else
+ CFLAGS_ABI	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
+ endif
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -192,7 +192,7 @@ CFLAGS_font.o := -Dstatic=
+ $(obj)/font.c: $(FONTC)
+ 	$(call cmd,shipped)
+ 
+-AFLAGS_hyp-stub.o := -Wa,-march=armv7-a
++AFLAGS_hyp-stub.o := -Wa,-mcpu=cortex-a15
+ 
+ $(obj)/hyp-stub.S: $(srctree)/arch/$(SRCARCH)/kernel/hyp-stub.S
+ 	$(call cmd,shipped)
+--- a/arch/arm/kernel/Makefile
++++ b/arch/arm/kernel/Makefile
+@@ -70,7 +70,7 @@ obj-$(CONFIG_HAVE_TCM)		+= tcm.o
+ obj-$(CONFIG_OF)		+= devtree.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_SWP_EMULATE)	+= swp_emulate.o
+-CFLAGS_swp_emulate.o		:= -Wa,-march=armv7-a
++CFLAGS_swp_emulate.o		:= -Wa,-mcpu=cortex-a15
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ 
+ obj-$(CONFIG_CPU_XSCALE)	+= xscale-cp0.o
+@@ -99,7 +99,7 @@ CFLAGS_head-inflate-data.o := $(call cc-
+ obj-$(CONFIG_XIP_DEFLATED_DATA) += head-inflate-data.o
+ 
+ obj-$(CONFIG_ARM_VIRT_EXT)	+= hyp-stub.o
+-AFLAGS_hyp-stub.o		:=-Wa,-march=armv7-a
++AFLAGS_hyp-stub.o		:=-Wa,-mcpu=cortex-a15
+ ifeq ($(CONFIG_ARM_PSCI),y)
+ obj-$(CONFIG_SMP)		+= psci_smp.o
+ endif
+--- a/arch/arm/common/Makefile
++++ b/arch/arm/common/Makefile
+@@ -14,7 +14,7 @@ obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
+ obj-$(CONFIG_CPU_V7)		+= secure_cntvoff.o
+ obj-$(CONFIG_MCPM)		+= mcpm_head.o mcpm_entry.o mcpm_platsmp.o vlock.o
+ CFLAGS_REMOVE_mcpm_entry.o	= -pg
+-AFLAGS_mcpm_head.o		:= -march=armv7-a
+-AFLAGS_vlock.o			:= -march=armv7-a
++AFLAGS_mcpm_head.o		:= -mcpu=cortex-a15
++AFLAGS_vlock.o			:= -mcpu=cortex-a15
+ obj-$(CONFIG_BL_SWITCHER)	+= bL_switcher.o
+ obj-$(CONFIG_BL_SWITCHER_DUMMY_IF) += bL_switcher_dummy_if.o
+--- a/arch/arm/mm/Makefile
++++ b/arch/arm/mm/Makefile
+@@ -34,7 +34,7 @@ obj-$(CONFIG_CPU_ABRT_EV6)	+= abort-ev6.
+ obj-$(CONFIG_CPU_ABRT_EV7)	+= abort-ev7.o
+ 
+ AFLAGS_abort-ev6.o	:=-Wa,-march=armv6k
+-AFLAGS_abort-ev7.o	:=-Wa,-march=armv7-a
++AFLAGS_abort-ev7.o	:=-Wa,-mcpu=cortex-a15
+ 
+ obj-$(CONFIG_CPU_PABRT_LEGACY)	+= pabort-legacy.o
+ obj-$(CONFIG_CPU_PABRT_V6)	+= pabort-v6.o
+@@ -50,7 +50,7 @@ obj-$(CONFIG_CPU_CACHE_NOP)	+= cache-nop
+ obj-$(CONFIG_CPU_CACHE_V7M)	+= cache-v7m.o
+ 
+ AFLAGS_cache-v6.o	:=-Wa,-march=armv6
+-AFLAGS_cache-v7.o	:=-Wa,-march=armv7-a
++AFLAGS_cache-v7.o	:=-Wa,-mcpu=cortex-a15
+ AFLAGS_cache-v7m.o	:=-Wa,-march=armv7-m
+ 
+ obj-$(CONFIG_CPU_COPY_V4WT)	+= copypage-v4wt.o
+@@ -73,7 +73,7 @@ obj-$(CONFIG_CPU_TLB_V7)	+= tlb-v7.o
+ obj-$(CONFIG_CPU_TLB_FA)	+= tlb-fa.o
+ 
+ AFLAGS_tlb-v6.o		:=-Wa,-march=armv6
+-AFLAGS_tlb-v7.o		:=-Wa,-march=armv7-a
++AFLAGS_tlb-v7.o		:=-Wa,-mcpu=cortex-a15
+ 
+ obj-$(CONFIG_CPU_ARM7TDMI)	+= proc-arm7tdmi.o
+ obj-$(CONFIG_CPU_ARM720T)	+= proc-arm720.o
+@@ -102,7 +102,7 @@ obj-$(CONFIG_CPU_V7)		+= proc-v7.o proc-
+ obj-$(CONFIG_CPU_V7M)		+= proc-v7m.o
+ 
+ AFLAGS_proc-v6.o	:=-Wa,-march=armv6
+-AFLAGS_proc-v7.o	:=-Wa,-march=armv7-a
++AFLAGS_proc-v7.o	:=-Wa,-mcpu=cortex-a15
+ 
+ obj-$(CONFIG_OUTER_CACHE)	+= l2c-common.o
+ obj-$(CONFIG_CACHE_B15_RAC)	+= cache-b15-rac.o
+--- a/lib/raid6/Makefile
++++ b/lib/raid6/Makefile
+@@ -35,7 +35,7 @@ endif
+ ifeq ($(CONFIG_KERNEL_MODE_NEON),y)
+ NEON_FLAGS := -ffreestanding
+ ifeq ($(ARCH),arm)
+-NEON_FLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=neon
++NEON_FLAGS += -mfloat-abi=softfp -mfpu=neon
+ endif
+ CFLAGS_recov_neon_inner.o += $(NEON_FLAGS)
+ ifeq ($(ARCH),arm64)

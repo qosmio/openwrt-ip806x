@@ -1,0 +1,92 @@
+--- a/arch/arm/boot/compressed/atags_to_fdt.c
++++ b/arch/arm/boot/compressed/atags_to_fdt.c
+@@ -22,6 +22,7 @@ static int node_offset(void *fdt, const
+ 	return offset;
+ }
+ 
++#ifdef CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
+ static int setprop(void *fdt, const char *node_path, const char *property,
+ 		   void *val_array, int size)
+ {
+@@ -30,6 +31,7 @@ static int setprop(void *fdt, const char
+ 		return offset;
+ 	return fdt_setprop(fdt, offset, property, val_array, size);
+ }
++#endif
+ 
+ static int setprop_string(void *fdt, const char *node_path,
+ 			  const char *property, const char *string)
+@@ -40,6 +42,7 @@ static int setprop_string(void *fdt, con
+ 	return fdt_setprop_string(fdt, offset, property, string);
+ }
+ 
++#ifdef CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
+ static int setprop_cell(void *fdt, const char *node_path,
+ 			const char *property, uint32_t val)
+ {
+@@ -48,7 +51,7 @@ static int setprop_cell(void *fdt, const
+ 		return offset;
+ 	return fdt_setprop_cell(fdt, offset, property, val);
+ }
+-
++#endif
+ static const void *getprop(const void *fdt, const char *node_path,
+ 			   const char *property, int *len)
+ {
+@@ -60,6 +63,7 @@ static const void *getprop(const void *f
+ 	return fdt_getprop(fdt, offset, property, len);
+ }
+ 
++#ifdef CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
+ static uint32_t get_cell_size(const void *fdt)
+ {
+ 	int len;
+@@ -70,6 +74,7 @@ static uint32_t get_cell_size(const void
+ 		cell_size = fdt32_to_cpu(*size_len);
+ 	return cell_size;
+ }
++#endif
+ 
+ #if defined(CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_MANGLE)
+ /**
+@@ -99,7 +104,7 @@ static char *append_rootblock(char *dest
+ {
+ 	char *ptr, *end, *tmp;
+ 	char *root="root=";
+-	char *find_rootblock;
++	const char *find_rootblock;
+ 	int i, l;
+ 	const char *rootblock;
+ 
+@@ -185,6 +190,7 @@ static void merge_fdt_bootargs(void *fdt
+ 	setprop_string(fdt, "/chosen", "bootargs", cmdline);
+ }
+ 
++#ifdef CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
+ static void hex_str(char *out, uint32_t value)
+ {
+ 	uint32_t digit;
+@@ -202,6 +208,7 @@ static void hex_str(char *out, uint32_t
+ 	}
+ 	*out = '\0';
+ }
++#endif
+ 
+ /*
+  * Convert and fold provided ATAGs into the provided FDT.
+@@ -214,11 +221,14 @@ static void hex_str(char *out, uint32_t
+ int atags_to_fdt(void *atag_list, void *fdt, int total_space)
+ {
+ 	struct tag *atag = atag_list;
++#ifdef CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND
+ 	/* In the case of 64 bits memory size, need to reserve 2 cells for
+ 	 * address and size for each bank */
+ 	__be32 mem_reg_property[2 * 2 * NR_BANKS];
+ 	int memcount = 0;
+-	int ret, memsize;
++    int memsize;
++#endif
++	int ret;
+ 
+ 	/* make sure we've got an aligned pointer */
+ 	if ((u32)atag_list & 0x3)
