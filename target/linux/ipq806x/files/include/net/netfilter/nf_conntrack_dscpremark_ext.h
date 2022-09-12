@@ -1,6 +1,7 @@
 /*
  **************************************************************************
- * Copyright (c) 2014-2015, 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
  * above copyright notice and this permission notice appear in all copies.
@@ -32,6 +33,7 @@
 #define NF_CT_DSCPREMARK_EXT_PRIO 0x1
 #define NF_CT_DSCPREMARK_EXT_DSCP 0x2
 #define NF_CT_DSCPREMARK_EXT_IGS_QOS 0x4
+#define NF_CT_DSCPREMARK_EXT_MARK 0x8
 
 /*
  * DSCP remark conntrack extension structure.
