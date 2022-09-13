@@ -1,0 +1,46 @@
+From 78e96cd2d710b041bab8073698d93d6aa41cccce Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Sun, 7 Aug 2022 21:42:16 +0200
+Subject: [PATCH 2/2] regulator: qcom_rpm: add support to set regulator system
+ load
+
+Add support to set regulator system load by setting the regulator
+peak mA regs. If the provided value exceed the reg mask, the max
+possible value is set instead of the DT value.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/regulator/qcom_rpm-regulator.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+--- a/drivers/regulator/qcom_rpm-regulator.c
++++ b/drivers/regulator/qcom_rpm-regulator.c
+@@ -803,6 +803,28 @@ static int rpm_reg_of_parse(struct devic
+ 		}
+ 	}
+ 
++	if (vreg->parts->ip.mask) {
++		u32 max_uA = (vreg->parts->ip.mask >> vreg->parts->ip.shift) * 1000;
++		key = "regulator-system-load";
++
++		ret = of_property_read_u32(node, key, &val);
++		if (ret == -EINVAL) {
++			val = max_uA;
++		} else if (ret < 0) {
++			dev_err(dev, "failed to read %s\n", key);
++			return ret;
++		}
++
++		if (val > max_uA)
++			val = max_uA;
++
++		ret = rpm_reg_set(vreg, &vreg->parts->ip, val / 1000);
++		if (ret) {
++			dev_err(dev, "failed to set peak mA\n");
++			return ret;
++		}
++	}
++
+ 	return 0;
+ }
+ 
