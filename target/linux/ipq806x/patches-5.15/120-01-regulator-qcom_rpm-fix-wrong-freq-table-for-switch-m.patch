@@ -1,0 +1,98 @@
+From 3a2eda673a09fbe474c7a3bd26026927f5ea3dbf Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Sun, 7 Aug 2022 20:17:17 +0200
+Subject: [PATCH 1/2] regulator: qcom_rpm: fix wrong freq table for
+ switch-mode-frequency
+
+Fix wrong freq table used for qcom,switch-mode-frequency to parse the
+swich freq.
+
+We currently parse the index value on a wrong table that lacks of
+some values. This cause the wrong index to be set in the RPM request.
+
+smb208 regulator for example can run at max 500 or 1000 kHz and this
+freq is not present in the current table. Checking really old code
+permits to get the real table and set the correct value.
+
+Fixes: 2720386ec5d4 ("regulator: qcom-rpm: Regulator driver for the Qualcomm RPM")
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/regulator/qcom_rpm-regulator.c | 56 +++++++++++++++++++++-----
+ 1 file changed, 47 insertions(+), 9 deletions(-)
+
+--- a/drivers/regulator/qcom_rpm-regulator.c
++++ b/drivers/regulator/qcom_rpm-regulator.c
+@@ -640,16 +640,54 @@ static int rpm_reg_set(struct qcom_rpm_r
+ 	return 0;
+ }
+ 
++enum rpm_reg_freqs {
++	RPM_VREG_FREQ_NONE,
++	RPM_VREG_FREQ_0p50,
++	RPM_VREG_FREQ_1p00,
++	RPM_VREG_FREQ_19p20,
++	RPM_VREG_FREQ_9p60,
++	RPM_VREG_FREQ_6p40,
++	RPM_VREG_FREQ_4p80,
++	RPM_VREG_FREQ_3p84,
++	RPM_VREG_FREQ_3p20,
++	RPM_VREG_FREQ_2p74,
++	RPM_VREG_FREQ_2p40,
++	RPM_VREG_FREQ_2p13,
++	RPM_VREG_FREQ_1p92,
++	RPM_VREG_FREQ_1p75,
++	RPM_VREG_FREQ_1p60,
++	RPM_VREG_FREQ_1p48,
++	RPM_VREG_FREQ_1p37,
++	RPM_VREG_FREQ_1p28,
++	RPM_VREG_FREQ_1p20,
++};
++
++static const int rpm_reg_freq_tbl[] = {
++	[RPM_VREG_FREQ_NONE] = 0,
++	[RPM_VREG_FREQ_0p50] = 500000,
++	[RPM_VREG_FREQ_1p00] = 1000000,
++	[RPM_VREG_FREQ_19p20] = 19200000,
++	[RPM_VREG_FREQ_9p60] = 9600000,
++	[RPM_VREG_FREQ_6p40] = 6400000,
++	[RPM_VREG_FREQ_4p80] = 4800000,
++	[RPM_VREG_FREQ_3p84] = 3840000,
++	[RPM_VREG_FREQ_3p20] = 3200000,
++	[RPM_VREG_FREQ_2p74] = 2740000,
++	[RPM_VREG_FREQ_2p40] = 2400000,
++	[RPM_VREG_FREQ_2p13] = 2130000,
++	[RPM_VREG_FREQ_1p92] = 1920000,
++	[RPM_VREG_FREQ_1p75] = 1750000,
++	[RPM_VREG_FREQ_1p60] = 1600000,
++	[RPM_VREG_FREQ_1p48] = 1480000,
++	[RPM_VREG_FREQ_1p37] = 1370000,
++	[RPM_VREG_FREQ_1p28] = 1280000,
++	[RPM_VREG_FREQ_1p20] = 1200000,
++};
++
+ static int rpm_reg_of_parse_freq(struct device *dev,
+ 				 struct device_node *node,
+ 				 struct qcom_rpm_reg *vreg)
+ {
+-	static const int freq_table[] = {
+-		19200000, 9600000, 6400000, 4800000, 3840000, 3200000, 2740000,
+-		2400000, 2130000, 1920000, 1750000, 1600000, 1480000, 1370000,
+-		1280000, 1200000,
+-
+-	};
+ 	const char *key;
+ 	u32 freq;
+ 	int ret;
+@@ -662,9 +700,9 @@ static int rpm_reg_of_parse_freq(struct
+ 		return -EINVAL;
+ 	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(freq_table); i++) {
+-		if (freq == freq_table[i]) {
+-			rpm_reg_set(vreg, &vreg->parts->freq, i + 1);
++	for (i = 0; i < ARRAY_SIZE(rpm_reg_freq_tbl); i++) {
++		if (freq == rpm_reg_freq_tbl[i]) {
++			rpm_reg_set(vreg, &vreg->parts->freq, i);
+ 			return 0;
+ 		}
+ 	}
