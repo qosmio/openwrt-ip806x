@@ -202,7 +202,7 @@
  extern int qcom_cc_register_rcg_dfs(struct regmap *regmap,
  				    const struct clk_rcg_dfs_data *rcgs,
  				    size_t len);
-+ 
++
 +extern void clk_dyn_configure_bank(struct clk_dyn_rcg *rcg,
 +					const struct freq_tbl *f);
  #endif

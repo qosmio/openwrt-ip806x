@@ -1,16 +1,14 @@
 --- a/include/linux/if_bridge.h
 +++ b/include/linux/if_bridge.h
-@@ -69,6 +69,9 @@ void brioctl_set(int (*hook)(struct net
+@@ -69,6 +69,7 @@ void brioctl_set(int (*hook)(struct net
  			     void __user *uarg));
  int br_ioctl_call(struct net *net, struct net_bridge *br, unsigned int cmd,
  		  struct ifreq *ifr, void __user *uarg);
-+extern void br_dev_update_stats(struct net_device *dev,
-+				struct rtnl_link_stats64 *nlstats);
 +extern bool br_is_hairpin_enabled(struct net_device *dev);
  
  #if IS_ENABLED(CONFIG_BRIDGE) && IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
  int br_multicast_list_adjacent(struct net_device *dev,
-@@ -192,4 +195,42 @@ static inline clock_t br_get_ageing_time
+@@ -192,4 +193,42 @@ static inline clock_t br_get_ageing_time
  }
  #endif
  
@@ -55,31 +53,15 @@
  #endif
 --- a/include/linux/if_vlan.h
 +++ b/include/linux/if_vlan.h
-@@ -222,7 +222,28 @@ extern void vlan_vids_del_by_dev(struct
+@@ -222,7 +222,12 @@ extern void vlan_vids_del_by_dev(struct
  
  extern bool vlan_uses_dev(const struct net_device *dev);
  
 +/* QCA NSS ECM support - Start */
-+extern void __vlan_dev_update_accel_stats(struct net_device *dev,
-+                                    struct rtnl_link_stats64 *stats);
-+extern u16 vlan_dev_get_egress_prio(struct net_device *dev, u32 skb_prio);
 +extern struct net_device *vlan_dev_next_dev(const struct net_device *dev);
 +/* QCA NSS ECM support - End */
 +
  #else
-+/* QCA NSS ECM support - Start */
-+static inline void __vlan_dev_update_accel_stats(struct net_device *dev,
-+					   struct rtnl_link_stats64 *stats)
-+{
-+
-+}
-+
-+static inline u16 vlan_dev_get_egress_prio(struct net_device *dev,
-+						u32 skb_prio)
-+{
-+	return 0;
-+}
-+/* QCA NSS ECM support - End */
 +
  static inline struct net_device *
  __vlan_find_dev_deep_rcu(struct net_device *real_dev,
@@ -173,51 +155,11 @@
  void fib_del_ifaddr(struct in_ifaddr *, struct in_ifaddr *);
 --- a/net/8021q/vlan_core.c
 +++ b/net/8021q/vlan_core.c
-@@ -556,4 +556,52 @@ static int __init vlan_offload_init(void
+@@ -556,4 +556,12 @@ static int __init vlan_offload_init(void
  	return 0;
  }
  
 +/* QCA NSS ECM support - Start */
-+/* Update the VLAN device with statistics from network offload engines */
-+void __vlan_dev_update_accel_stats(struct net_device *dev,
-+				   struct rtnl_link_stats64 *nlstats)
-+{
-+	struct vlan_pcpu_stats *stats;
-+
-+	if (!is_vlan_dev(dev))
-+		return;
-+
-+	stats = per_cpu_ptr(vlan_dev_priv(dev)->vlan_pcpu_stats, 0);
-+
-+	u64_stats_update_begin(&stats->syncp);
-+	stats->rx_packets += nlstats->rx_packets;
-+	stats->rx_bytes += nlstats->rx_bytes;
-+	stats->tx_packets += nlstats->tx_packets;
-+	stats->tx_bytes += nlstats->tx_bytes;
-+	u64_stats_update_end(&stats->syncp);
-+}
-+EXPORT_SYMBOL(__vlan_dev_update_accel_stats);
-+
-+/* Lookup the 802.1p egress_map table and return the 802.1p value */
-+u16 vlan_dev_get_egress_prio(struct net_device *dev, u32 skb_prio)
-+{
-+	struct vlan_priority_tci_mapping *mp;
-+
-+	mp = vlan_dev_priv(dev)->egress_priority_map[(skb_prio & 0xf)];
-+	while (mp) {
-+		if (mp->priority == skb_prio) {
-+			/* This should already be shifted
-+			 * to mask correctly with the
-+			 * VLAN's TCI
-+			 */
-+			return mp->vlan_qos;
-+		}
-+		mp = mp->next;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(vlan_dev_get_egress_prio);
-+
 +struct net_device *vlan_dev_next_dev(const struct net_device *dev)
 +{
 +	return vlan_dev_priv(dev)->real_dev;
@@ -432,40 +374,12 @@
  	/* Since more than one interface can be attached to a bridge,
  	 * there still maybe an alternate path for netconsole to use;
  	 * therefore there is no reason for a NETDEV_RELEASE event.
-@@ -788,3 +799,103 @@ bool br_port_flag_is_set(const struct ne
+@@ -788,3 +799,75 @@ bool br_port_flag_is_set(const struct ne
  	return p->flags & flag;
  }
  EXPORT_SYMBOL_GPL(br_port_flag_is_set);
 +
 +/* QCA NSS ECM support - Start */
-+/* Update bridge statistics for bridge packets processed by offload engines */
-+void br_dev_update_stats(struct net_device *dev,
-+			 struct rtnl_link_stats64 *nlstats)
-+{
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
-+	struct net_bridge *br;
-+#endif
-+	struct pcpu_sw_netstats *stats;
-+
-+	/* Is this a bridge? */
-+	if (!(dev->priv_flags & IFF_EBRIDGE))
-+		return;
-+
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
-+	br = netdev_priv(dev);
-+	stats = this_cpu_ptr(br->stats);
-+#else
-+	stats = this_cpu_ptr(dev->tstats);
-+#endif
-+
-+	u64_stats_update_begin(&stats->syncp);
-+	stats->rx_packets += nlstats->rx_packets;
-+	stats->rx_bytes += nlstats->rx_bytes;
-+	stats->tx_packets += nlstats->tx_packets;
-+	stats->tx_bytes += nlstats->tx_bytes;
-+	u64_stats_update_end(&stats->syncp);
-+}
-+EXPORT_SYMBOL_GPL(br_dev_update_stats);
 +/* API to know if hairpin feature is enabled/disabled on this bridge port */
 +bool br_is_hairpin_enabled(struct net_device *dev)
 +{
@@ -678,28 +592,6 @@
  struct fib_table *fib_trie_table(u32 id, struct fib_table *alias)
  {
  	struct fib_table *tb;
---- a/include/net/addrconf.h
-+++ b/include/net/addrconf.h
-@@ -102,6 +102,9 @@ int ipv6_chk_prefix(const struct in6_add
- struct net_device *ipv6_dev_find(struct net *net, const struct in6_addr *addr,
- 				 struct net_device *dev);
- 
-+struct net_device *qca_ipv6_dev_find(struct net *net, struct in6_addr *addr,
-+                                 int strict);
-+
- struct inet6_ifaddr *ipv6_get_ifaddr(struct net *net,
- 				     const struct in6_addr *addr,
- 				     struct net_device *dev, int strict);
-@@ -504,4 +507,9 @@ int if6_proc_init(void);
- void if6_proc_exit(void);
- #endif
- 
-+/* QCA NSS ECM support - Start */
-+struct net_device *ipv6_dev_find_and_hold(struct net *net, struct in6_addr *addr,
-+				 int strict);
-+/* QCA NSS ECM support - End */
-+
- #endif
 --- a/net/ipv6/addrconf.c
 +++ b/net/ipv6/addrconf.c
 @@ -987,6 +987,7 @@ void inet6_ifa_finish_destroy(struct ine
@@ -710,45 +602,7 @@
  
  static void
  ipv6_link_dev_addr(struct inet6_dev *idev, struct inet6_ifaddr *ifp)
-@@ -2025,6 +2026,37 @@ struct net_device *ipv6_dev_find(struct
- }
- EXPORT_SYMBOL(ipv6_dev_find);
- 
-+/* QCA NSS ECM support - Start */
-+/* ipv6_dev_find()
-+ *      Find (and hold) net device that has the given address.
-+ *      Or NULL on failure.
-+ */
-+struct net_device *qca_ipv6_dev_find(struct net *net, struct in6_addr *addr,
-+                                 int strict)
-+{
-+        struct inet6_ifaddr *ifp;
-+        struct net_device *dev;
-+
-+        ifp = ipv6_get_ifaddr(net, addr, NULL, strict);
-+        if (!ifp)
-+                return NULL;
-+
-+        if (!ifp->idev) {
-+                in6_ifa_put(ifp);
-+                return NULL;
-+        }
-+
-+        dev = ifp->idev->dev;
-+        if (dev)
-+                dev_hold(dev);
-+
-+        in6_ifa_put(ifp);
-+
-+        return dev;
-+}
-+EXPORT_SYMBOL(qca_ipv6_dev_find);
-+/* QCA NSS ECM support - End */
-+
- struct inet6_ifaddr *ipv6_get_ifaddr(struct net *net, const struct in6_addr *addr,
- 				     struct net_device *dev, int strict)
- {
-@@ -2048,6 +2080,7 @@ struct inet6_ifaddr *ipv6_get_ifaddr(str
+@@ -2048,6 +2049,7 @@ struct inet6_ifaddr *ipv6_get_ifaddr(str
  
  	return result;
  }
@@ -756,42 +610,6 @@
  
  /* Gets referenced address, destroys ifaddr */
  
-@@ -7355,3 +7388,35 @@ void addrconf_cleanup(void)
- 
- 	destroy_workqueue(addrconf_wq);
- }
-+
-+/* QCA NSS ECM support - Start */
-+/* ipv6_dev_find_and_hold()
-+ *	Find (and hold) net device that has the given address.
-+ *	Or NULL on failure.
-+ */
-+struct net_device *ipv6_dev_find_and_hold(struct net *net, struct in6_addr *addr,
-+				 int strict)
-+{
-+	struct inet6_ifaddr *ifp;
-+	struct net_device *dev;
-+
-+	ifp = ipv6_get_ifaddr(net, addr, NULL, strict);
-+	if (!ifp)
-+		return NULL;
-+
-+	if (!ifp->idev) {
-+		in6_ifa_put(ifp);
-+		return NULL;
-+	}
-+
-+	dev = ifp->idev->dev;
-+	if (dev)
-+		dev_hold(dev);
-+
-+	in6_ifa_put(ifp);
-+
-+	return dev;
-+}
-+EXPORT_SYMBOL(ipv6_dev_find_and_hold);
-+/* QCA NSS ECM support - End */
-+
 --- a/net/ipv6/ndisc.c
 +++ b/net/ipv6/ndisc.c
 @@ -649,6 +649,7 @@ void ndisc_send_ns(struct net_device *de

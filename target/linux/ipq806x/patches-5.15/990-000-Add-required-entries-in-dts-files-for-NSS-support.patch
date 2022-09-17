@@ -1,6 +1,6 @@
 --- a/arch/arm/boot/dts/qcom-ipq8064.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064.dtsi
-@@ -1276,6 +1276,12 @@
+@@ -1279,6 +1279,12 @@
  			snps,blen = <16 0 0 0 0 0 0>;
  		};
  
@@ -13,7 +13,7 @@
  		gmac0: ethernet@37000000 {
  			device_type = "network";
  			compatible = "qcom,ipq806x-gmac", "snps,dwmac";
-@@ -1479,6 +1485,131 @@
+@@ -1489,6 +1495,131 @@
  			regulator-always-on;
  		};
  
@@ -145,10 +145,10 @@
  		sdcc1bam: dma@12402000 {
  			compatible = "qcom,bam-v1.3.0";
  			reg = <0x12402000 0x8000>;
-@@ -1544,6 +1675,20 @@
+@@ -1554,6 +1685,20 @@
+ 				dmas = <&sdcc3bam 2>, <&sdcc3bam 1>;
  				dma-names = "tx", "rx";
  			};
- 		};
 +
 +		nss-common {
 +			compatible = "qcom,nss-common";
@@ -163,11 +163,11 @@
 +			nss_core_vdd_high = <1150000>;
 +			nss_core_threshold_freq = <733000000>;
 +		};
- 	};
+ 		};
  
- 	sfpb_mutex: sfpb-mutex {
-@@ -1559,3 +1704,27 @@
- 		hwlocks = <&sfpb_mutex 3>;
+ 		sfpb_mutex: hwlock@1200600 {
+@@ -1564,3 +1709,27 @@
+ 		};
  	};
  };
 +
@@ -196,7 +196,7 @@
 + };
 --- a/arch/arm/boot/dts/qcom-ipq8064-v2.0.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-v2.0.dtsi
-@@ -18,6 +18,15 @@
+@@ -22,6 +22,15 @@
  			reg = <0x41200000 0x300000>;
  			no-map;
  		};
@@ -214,7 +214,7 @@
  
 --- a/arch/arm/boot/dts/qcom-ipq8064-eax500.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-eax500.dtsi
-@@ -173,10 +173,17 @@
+@@ -170,10 +170,17 @@
  			0x00094 0x4e        /* PORT6_STATUS */
  			>;
  	};
@@ -232,7 +232,7 @@
  
  	phy-mode = "rgmii";
  	qcom,id = <1>;
-@@ -192,6 +199,9 @@
+@@ -189,6 +196,9 @@
  
  &gmac2 {
  	status = "okay";
@@ -287,7 +287,7 @@
  
 --- a/arch/arm/boot/dts/qcom-ipq8064-r7500.dts
 +++ b/arch/arm/boot/dts/qcom-ipq8064-r7500.dts
-@@ -261,6 +261,9 @@
+@@ -258,6 +258,9 @@
  
  &gmac1 {
  	status = "okay";
@@ -297,7 +297,7 @@
  	phy-mode = "rgmii";
  	qcom,id = <1>;
  
-@@ -278,6 +281,9 @@
+@@ -275,6 +278,9 @@
  
  &gmac2 {
  	status = "okay";
@@ -309,7 +309,7 @@
  
 --- a/arch/arm/boot/dts/qcom-ipq8064-r7500v2.dts
 +++ b/arch/arm/boot/dts/qcom-ipq8064-r7500v2.dts
-@@ -344,6 +344,9 @@
+@@ -341,6 +341,9 @@
  
  &gmac1 {
  	status = "okay";
@@ -319,7 +319,7 @@
  	phy-mode = "rgmii";
  	qcom,id = <1>;
  
-@@ -361,6 +364,9 @@
+@@ -358,6 +361,9 @@
  
  &gmac2 {
  	status = "okay";
@@ -331,7 +331,7 @@
  
 --- a/arch/arm/boot/dts/qcom-ipq8064-d7800.dts
 +++ b/arch/arm/boot/dts/qcom-ipq8064-d7800.dts
-@@ -350,6 +350,9 @@
+@@ -344,6 +344,9 @@
  
  &gmac1 {
  	status = "okay";
@@ -341,7 +341,7 @@
  	phy-mode = "rgmii";
  	qcom,id = <1>;
  
-@@ -367,6 +370,9 @@
+@@ -361,6 +364,9 @@
  
  &gmac2 {
  	status = "okay";
@@ -416,9 +416,9 @@
  
  	pinctrl-0 = <&mdio0_pins>;
  	pinctrl-names = "default";
-@@ -170,10 +198,14 @@
- 			0x00094 0x4e        /* PORT6_STATUS */
- 			>;
+@@ -224,10 +252,14 @@
+ 			*/
+ 		};
  	};
 +
  };
@@ -429,9 +429,9 @@
 +	qcom,poll-required = <0>;
 +	qcom,rgmii-delay = <0>;
  
- 	pinctrl-0 = <&nand_pins>;
- 	pinctrl-names = "default";
-@@ -210,6 +242,7 @@
+ 	nand@0 {
+ 		reg = <0>;
+@@ -261,6 +293,7 @@
  			qcom,ath10k-calibration-variant = "ASRock-G10";
  		};
  	};
@@ -441,16 +441,7 @@
  &pcie1 {
 --- a/arch/arm/boot/dts/qcom-ipq8065.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8065.dtsi
-@@ -89,7 +89,7 @@
- };
- 
- &opp_table0 {
--	/* 
-+	/*
- 	 * On ipq8065 1.2 ghz freq is not present
- 	 * Remove it to make cpufreq work and not
- 	 * complain for missing definition
-@@ -165,3 +165,15 @@
+@@ -95,3 +95,15 @@
  		opp-level = <2>;
  	};
  };
@@ -468,7 +459,7 @@
 + };
 --- a/arch/arm/boot/dts/qcom-ipq8065-nighthawk.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8065-nighthawk.dtsi
-@@ -347,14 +347,23 @@
+@@ -344,14 +344,23 @@
  
  &gmac1 {
  	status = "okay";
@@ -493,7 +484,7 @@
  	qcom,irq = <255>;
  	mdiobus = <&mdio0>;
  
-@@ -372,14 +381,23 @@
+@@ -369,14 +378,23 @@
  
  &gmac2 {
  	status = "okay";
@@ -539,7 +530,7 @@
 +};
 --- a/arch/arm/boot/dts/qcom-ipq8065-rt4230w-rev6.dts
 +++ b/arch/arm/boot/dts/qcom-ipq8065-rt4230w-rev6.dts
-@@ -312,10 +312,28 @@
+@@ -311,10 +311,28 @@
  			0x00054 0xc832c832  /* LED_CTRL_1 */
  			>;
  	};
@@ -568,7 +559,7 @@
  	phy-mode = "rgmii";
  	qcom,id = <0>;
  
-@@ -333,6 +351,16 @@
+@@ -332,6 +350,16 @@
  
  &gmac1 {
  	status = "okay";
