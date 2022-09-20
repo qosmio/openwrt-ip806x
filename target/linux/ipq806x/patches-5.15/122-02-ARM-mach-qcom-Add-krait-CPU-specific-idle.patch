@@ -1,0 +1,98 @@
+From 50523bace0af72bf488c26359bc0d7e054c3f1be Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Mon, 19 Sep 2022 14:49:02 +0200
+Subject: [PATCH 2/3] ARM: mach-qcom: Add krait CPU specific idle
+
+Add krait CPU specific idle that does extra save while in WFI.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ arch/arm/include/asm/mach/krait-idle.h | 11 +++++++++
+ arch/arm/mach-qcom/Kconfig             |  3 +++
+ arch/arm/mach-qcom/Makefile            |  1 +
+ arch/arm/mach-qcom/krait-idle.S        | 34 ++++++++++++++++++++++++++
+ 4 files changed, 49 insertions(+)
+ create mode 100644 arch/arm/include/asm/mach/krait-idle.h
+ create mode 100644 arch/arm/mach-qcom/krait-idle.S
+
+diff --git a/arch/arm/include/asm/mach/krait-idle.h b/arch/arm/include/asm/mach/krait-idle.h
+new file mode 100644
+index 000000000000..c8da6b3fb792
+--- /dev/null
++++ b/arch/arm/include/asm/mach/krait-idle.h
+@@ -0,0 +1,11 @@
++#ifndef __ASSEMBLY__
++
++#ifdef ARCH_KRAIT_IDLE
++extern void arm_krait_idle(void);
++#else
++static void arm_krait_idle(void) {
++	cpu_do_idle();
++}
++#endif
++
++#endif /* __ASSEMBLY__ */
+\ No newline at end of file
+diff --git a/arch/arm/mach-qcom/Kconfig b/arch/arm/mach-qcom/Kconfig
+index 12a812e61c16..ae26bca49b39 100644
+--- a/arch/arm/mach-qcom/Kconfig
++++ b/arch/arm/mach-qcom/Kconfig
+@@ -46,4 +46,7 @@ config ARCH_MDM9615
+ 	bool "Enable support for MDM9615"
+ 	select CLKSRC_QCOM
+ 
++config ARCH_KRAIT_IDLE
++	bool "Enable Krait Idle specific WFI"
++
+ endif
+diff --git a/arch/arm/mach-qcom/Makefile b/arch/arm/mach-qcom/Makefile
+index b839201c9802..fc828b60def0 100644
+--- a/arch/arm/mach-qcom/Makefile
++++ b/arch/arm/mach-qcom/Makefile
+@@ -1,2 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ obj-$(CONFIG_SMP)	+= platsmp.o
++obj-$(CONFIG_ARCH_KRAIT_IDLE) += krait-idle.o
+diff --git a/arch/arm/mach-qcom/krait-idle.S b/arch/arm/mach-qcom/krait-idle.S
+new file mode 100644
+index 000000000000..005b5d511e69
+--- /dev/null
++++ b/arch/arm/mach-qcom/krait-idle.S
+@@ -0,0 +1,34 @@
++#include <linux/linkage.h>
++#include <asm/assembler.h>
++#include <asm/mach/krait-idle.h>
++
++ENTRY(arm_krait_idle)
++	mrc 	p15, 0, r0, c0, c0, 0
++	bic	r1, r0, #0xff
++	movw	r2, #0x0400
++	movt	r2, #0x511F
++	movw	r3, #0x0600
++	movt	r3, #0x510F
++	cmp	r2, r1
++	cmpne	r3, r1
++	bne	go_wfi
++
++	mrs	r0, cpsr
++	cpsid	if
++
++	mrc	p15, 7, r1, c15, c0, 5
++	bic	r2, r1, #0x20000
++	mcr	p15, 7, r2, c15, c0, 5
++	isb
++
++go_wfi:
++	wfi
++	bne	wfi_done
++	mcr	p15, 7, r1, c15, c0, 5
++	isb
++	msr	cpsr_c, r0
++
++wfi_done:
++	bx	lr
++ENDPROC(arm_krait_idle)
++
+-- 
+2.37.2
+
