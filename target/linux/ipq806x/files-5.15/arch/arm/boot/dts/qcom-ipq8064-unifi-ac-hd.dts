@@ -86,6 +86,10 @@
 	};
 };
 
+&CPU_SPC {
+	status = "disabled";
+};
+
 &gsbi5 {
 	status = "okay";
 
