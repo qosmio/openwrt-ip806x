@@ -1,0 +1,11 @@
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -2440,7 +2440,7 @@ static inline void *netdev_priv(const st
+ /* Default NAPI poll() weight
+  * Device drivers are strongly advised to not use bigger value
+  */
+-#define NAPI_POLL_WEIGHT 64
++#define NAPI_POLL_WEIGHT 8
+
+ /**
+  *	netif_napi_add - initialize a NAPI context
