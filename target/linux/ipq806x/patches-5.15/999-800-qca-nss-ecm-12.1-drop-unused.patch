@@ -1,0 +1,127 @@
+--- a/include/linux/if_bridge.h
++++ b/include/linux/if_bridge.h
+@@ -198,7 +198,6 @@ extern struct net_device *br_port_dev_ge
+ 					  unsigned char *addr,
+ 					  struct sk_buff *skb,
+ 					  unsigned int cookie);
+-extern void br_refresh_fdb_entry(struct net_device *dev, const char *addr);
+ extern void br_fdb_entry_refresh(struct net_device *dev, const char *addr, __u16 vid);
+ extern struct net_bridge_fdb_entry *br_fdb_has_entry(struct net_device *dev,
+ 						     const char *addr,
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -1465,26 +1465,6 @@ void br_fdb_clear_offload(const struct n
+ EXPORT_SYMBOL_GPL(br_fdb_clear_offload);
+ 
+ /* QCA NSS ECM support - Start */
+-/* Refresh FDB entries for bridge packets being forwarded by offload engines */
+-void br_refresh_fdb_entry(struct net_device *dev, const char *addr)
+-{
+-	struct net_bridge_port *p = br_port_get_rcu(dev);
+-
+-	if (!p || p->state == BR_STATE_DISABLED)
+-		return;
+-
+-	if (!is_valid_ether_addr(addr)) {
+-		pr_info("bridge: Attempt to refresh with invalid ether address %pM\n",
+-			addr);
+-		return;
+-	}
+-
+-	rcu_read_lock();
+-	br_fdb_update(p->br, p, addr, 0, true);
+-	rcu_read_unlock();
+-}
+-EXPORT_SYMBOL_GPL(br_refresh_fdb_entry);
+-
+ /* Update timestamp of FDB entries for bridge packets being forwarded by offload engines */
+ void br_fdb_entry_refresh(struct net_device *dev, const char *addr, __u16 vid)
+ {
+--- a/drivers/net/ppp/ppp_generic.c
++++ b/drivers/net/ppp/ppp_generic.c
+@@ -3772,34 +3772,6 @@ int ppp_channel_get_proto_version(struct
+ }
+ EXPORT_SYMBOL(ppp_channel_get_proto_version);
+ 
+-/* ppp_channel_hold()
+- *	Call this to hold a channel.
+- *
+- * Returns true on success or false if the hold could not happen.
+- *
+- * NOTE: chan must be protected against destruction during this call -
+- * either by correct locking etc. or because you already have an implicit
+- * or explicit hold to the channel already and this is an additional hold.
+- */
+-bool ppp_channel_hold(struct ppp_channel *chan)
+-{
+-	if (!chan->ops->hold)
+-		return false;
+-
+-	chan->ops->hold(chan);
+-	return true;
+-}
+-EXPORT_SYMBOL(ppp_channel_hold);
+-
+-/* ppp_channel_release()
+- *	Call this to release a hold you have upon a channel
+- */
+-void ppp_channel_release(struct ppp_channel *chan)
+-{
+-	chan->ops->release(chan);
+-}
+-EXPORT_SYMBOL(ppp_channel_release);
+-
+ /* Check if ppp xmit lock is on hold */
+ bool ppp_is_xmit_locked(struct net_device *dev)
+ {
+--- a/include/linux/ppp_channel.h
++++ b/include/linux/ppp_channel.h
+@@ -99,12 +99,6 @@ extern int ppp_channel_get_protocol(stru
+ /* Call this get protocol version */
+ extern int ppp_channel_get_proto_version(struct ppp_channel *);
+ 
+-/* Call this to hold a channel */
+-extern bool ppp_channel_hold(struct ppp_channel *);
+-
+-/* Call this to release a hold you have upon a channel */
+-extern void ppp_channel_release(struct ppp_channel *);
+-
+ /* Release hold on PPP channels */
+ extern void ppp_release_channels(struct ppp_channel *channels[],
+ 				 unsigned int chan_sz);
+--- a/drivers/net/ppp/pptp.c
++++ b/drivers/net/ppp/pptp.c
+@@ -748,20 +748,6 @@ int pptp_session_find(struct pptp_opt *o
+ }
+ EXPORT_SYMBOL(pptp_session_find);
+ 
+-/* pptp_session_find_by_src_callid()
+- *	Search and return a PPTP session info based on src callid and IP
+- *	address. The function accepts the parameters in network byte order.
+- */
+-int pptp_session_find_by_src_callid(struct pptp_opt *opt, __be16 src_call_id,
+-		      __be32 daddr, __be32 saddr)
+-{
+-	if (!opt)
+-		return -EINVAL;
+-
+-	return lookup_session_src(opt, ntohs(src_call_id), daddr, saddr);
+-}
+-EXPORT_SYMBOL(pptp_session_find_by_src_callid);
+-
+  /* Function to change the offload mode true/false for a PPTP session */
+ static int pptp_set_offload_mode(bool accel_mode,
+ 				 __be16 peer_call_id, __be32 peer_ip_addr)
+--- a/include/linux/if_pppox.h
++++ b/include/linux/if_pppox.h
+@@ -111,10 +111,6 @@ typedef int (*pptp_gre_seq_offload_callb
+ extern int pppoe_channel_addressing_get(struct ppp_channel *chan,
+ 					 struct pppoe_opt *addressing);
+ 
+-/* Lookup PPTP session info and return PPTP session using sip, dip and local call id */
+-extern int pptp_session_find_by_src_callid(struct pptp_opt *opt, __be16 src_call_id,
+-			 __be32 daddr, __be32 saddr);
+-
+ /* Lookup PPTP session info and return PPTP session using dip and peer call id */
+ extern int pptp_session_find(struct pptp_opt *opt, __be16 peer_call_id,
+ 			     __be32 peer_ip_addr);
