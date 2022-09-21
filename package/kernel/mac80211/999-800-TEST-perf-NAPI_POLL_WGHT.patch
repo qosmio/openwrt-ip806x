@@ -1,0 +1,58 @@
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -514,7 +514,7 @@ struct sta_info *sta_info_alloc(struct i
+ 	sta->sta.max_rc_amsdu_len = IEEE80211_MAX_MPDU_LEN_HT_BA;
+
+ 	sta->cparams.ce_threshold = CODEL_DISABLED_THRESHOLD;
+-	sta->cparams.target = MS2TIME(20);
++	sta->cparams.target = MS2TIME(8);
+ 	sta->cparams.interval = MS2TIME(100);
+ 	sta->cparams.ecn = true;
+
+@@ -2548,15 +2548,9 @@ static void sta_update_codel_params(stru
+ 	if (!sta->sdata->local->ops->wake_tx_queue)
+ 		return;
+
+-	if (thr && thr < STA_SLOW_THRESHOLD * sta->local->num_sta) {
+-		sta->cparams.target = MS2TIME(50);
+-		sta->cparams.interval = MS2TIME(300);
+-		sta->cparams.ecn = false;
+-	} else {
+-		sta->cparams.target = MS2TIME(20);
+-		sta->cparams.interval = MS2TIME(100);
+-		sta->cparams.ecn = true;
+-	}
++	sta->cparams.target = MS2TIME(8);
++	sta->cparams.interval = MS2TIME(100);
++	sta->cparams.ecn = true;
+ }
+
+ void ieee80211_sta_set_expected_throughput(struct ieee80211_sta *pubsta,
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1564,7 +1564,7 @@ int ieee80211_txq_setup_flows(struct iee
+
+ 	codel_params_init(&local->cparams);
+ 	local->cparams.interval = MS2TIME(100);
+-	local->cparams.target = MS2TIME(20);
++	local->cparams.target = MS2TIME(8);
+ 	local->cparams.ecn = true;
+
+ 	local->cvars = kcalloc(fq->flows_cnt, sizeof(local->cvars[0]),
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -2842,11 +2842,11 @@ enum wiphy_params_flags {
+ #define IEEE80211_DEFAULT_AIRTIME_WEIGHT	256
+
+ /* The per TXQ device queue limit in airtime */
+-#define IEEE80211_DEFAULT_AQL_TXQ_LIMIT_L	5000
+-#define IEEE80211_DEFAULT_AQL_TXQ_LIMIT_H	12000
++#define IEEE80211_DEFAULT_AQL_TXQ_LIMIT_L	2000
++#define IEEE80211_DEFAULT_AQL_TXQ_LIMIT_H	4000
+
+ /* The per interface airtime threshold to switch to lower queue limit */
+-#define IEEE80211_AQL_THRESHOLD			24000
++#define IEEE80211_AQL_THRESHOLD			8000
+
+ /**
+  * struct cfg80211_pmksa - PMK Security Association
