@@ -1,0 +1,79 @@
+From 4e407fe2dc3b8e4fec4fcff3111f6a6621b90a7c Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Fri, 23 Sep 2022 19:19:17 +0200
+Subject: [PATCH 3/4] clk: qcom: krait-cc: improve safe parent logic
+
+We can skip switching to a safe parent if we are switching to the safe
+parent or the mux is already set to a safe parent.
+
+Use the clock notifier data to detect the old and new rate and decided
+based on the hardcoded safe rate that correspond to the safe parent
+rate.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/clk/qcom/clk-krait.h |  1 +
+ drivers/clk/qcom/krait-cc.c  | 10 ++++++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
+index 94c798f8e834..ef650e220b3a 100644
+--- a/drivers/clk/qcom/clk-krait.h
++++ b/drivers/clk/qcom/clk-krait.h
+@@ -16,6 +16,7 @@ struct krait_mux_clk {
+ 	u8		old_index;
+ 	bool		reparent;
+ 	bool		disable_sec_src_gating;
++	unsigned long	safe_rate;
+ 
+ 	struct clk_hw	hw;
+ 	struct notifier_block   clk_nb;
+diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
+index 949657186fdb..dd78d5eded47 100644
+--- a/drivers/clk/qcom/krait-cc.c
++++ b/drivers/clk/qcom/krait-cc.c
+@@ -39,10 +39,17 @@ static int krait_notifier_cb(struct notifier_block *nb,
+ 			     void *data)
+ {
+ 	int ret = 0;
++	struct clk_notifier_data *cnd = data;
+ 	struct krait_mux_clk *mux = container_of(nb, struct krait_mux_clk,
+ 						 clk_nb);
+ 	/* Switch to safe parent */
+ 	if (event == PRE_RATE_CHANGE) {
++		if (likely(cnd->old_rate > mux->safe_rate) &&
++		    (cnd->new_rate == mux->safe_rate ||
++		     cnd->old_rate == mux->safe_rate)) {
++			goto exit;
++		}
++
+ 		mux->old_index = krait_mux_clk_ops.get_parent(&mux->hw);
+ 		ret = krait_mux_clk_ops.set_parent(&mux->hw, mux->safe_sel);
+ 		mux->reparent = false;
+@@ -57,6 +64,7 @@ static int krait_notifier_cb(struct notifier_block *nb,
+ 							   mux->old_index);
+ 	}
+ 
++exit:
+ 	return notifier_from_errno(ret);
+ }
+ 
+@@ -150,6 +158,7 @@ krait_add_sec_mux(struct device *dev, int id, const char *s,
+ 	mux->parent_map = sec_mux_map;
+ 	mux->hw.init = &init;
+ 	mux->safe_sel = 0;
++	mux->safe_rate = QSB_RATE;
+ 
+ 	/* Checking for qcom,krait-cc-v1 or qcom,krait-cc-v2 is not
+ 	 * enough to limit this to apq/ipq8064. Directly check machine
+@@ -228,6 +237,7 @@ krait_add_pri_mux(struct device *dev, struct clk *hfpll_div, struct clk *sec_mux
+ 	mux->parent_map = pri_mux_map;
+ 	mux->hw.init = &init;
+ 	mux->safe_sel = 2;
++	mux->safe_rate = AUX_RATE;
+ 
+ 	init.name = kasprintf(GFP_KERNEL, "krait%s_pri_mux", s);
+ 	if (!init.name)
+-- 
+2.37.2
+
