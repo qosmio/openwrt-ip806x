@@ -1,0 +1,50 @@
+From 5135074fdde015293ed31e4606ecc56b00ca6708 Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Fri, 23 Sep 2022 19:22:50 +0200
+Subject: [PATCH 4/4] clk: qcom: krait-cc: disble lpl for ipq806x
+
+Disable lpl for ipq806x since it seems it wasn't enabled in original
+firmware.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/clk/qcom/krait-cc.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
+index dd78d5eded47..6accdc9a85db 100644
+--- a/drivers/clk/qcom/krait-cc.c
++++ b/drivers/clk/qcom/krait-cc.c
+@@ -101,7 +101,8 @@ krait_add_div(struct device *dev, int id, const char *s, unsigned int offset)
+ 	div->mask = 0x3;
+ 	div->divisor = 2;
+ 	div->shift = 6;
+-	div->lpl = id >= 0;
++	if (!of_machine_is_compatible("qcom,ipq8064"))
++		div->lpl = id >= 0;
+ 	div->offset = offset;
+ 	div->hw.init = &init;
+ 
+@@ -152,7 +153,8 @@ krait_add_sec_mux(struct device *dev, int id, const char *s,
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	mux->offset = offset;
+-	mux->lpl = id >= 0;
++	if (!of_machine_is_compatible("qcom,ipq8064"))
++		mux->lpl = id >= 0;
+ 	mux->mask = 0x3;
+ 	mux->shift = 2;
+ 	mux->parent_map = sec_mux_map;
+@@ -233,7 +235,8 @@ krait_add_pri_mux(struct device *dev, struct clk *hfpll_div, struct clk *sec_mux
+ 	mux->mask = 0x3;
+ 	mux->shift = 0;
+ 	mux->offset = offset;
+-	mux->lpl = id >= 0;
++	if (!of_machine_is_compatible("qcom,ipq8064"))
++		mux->lpl = id >= 0;
+ 	mux->parent_map = pri_mux_map;
+ 	mux->hw.init = &init;
+ 	mux->safe_sel = 2;
+-- 
+2.37.2
+
