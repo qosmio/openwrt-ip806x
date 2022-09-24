@@ -20,11 +20,12 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
 
 --- a/arch/arm/boot/dts/qcom-ipq8062-smb208.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8062-smb208.dtsi
-@@ -9,29 +9,37 @@
+@@ -9,29 +9,41 @@
  		smb208_s1a: s1a {
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1200000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -35,6 +36,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1679000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -45,6 +47,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -55,6 +58,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -64,11 +68,12 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  };
 --- a/arch/arm/boot/dts/qcom-ipq8064-smb208.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-smb208.dtsi
-@@ -9,29 +9,37 @@
+@@ -9,29 +9,41 @@
  		smb208_s1a: s1a {
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1200000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -79,6 +84,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1679000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -89,6 +95,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1250000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -99,6 +106,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1250000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -108,11 +116,12 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  };
 --- a/arch/arm/boot/dts/qcom-ipq8064-v2.0-smb208.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-v2.0-smb208.dtsi
-@@ -9,29 +9,37 @@
+@@ -9,29 +9,41 @@
  		smb208_s1a: s1a {
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1200000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -123,6 +132,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1679000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -133,6 +143,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1250000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -143,6 +154,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = < 800000>;
  			regulator-max-microvolt = <1250000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -152,11 +164,12 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  };
 --- a/arch/arm/boot/dts/qcom-ipq8065-smb208.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8065-smb208.dtsi
-@@ -9,29 +9,37 @@
+@@ -9,29 +9,41 @@
  		smb208_s1a: s1a {
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1200000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -167,6 +180,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <1050000>;
  			regulator-max-microvolt = <1150000>;
 +			regulator-system-load = <1679000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -177,6 +191,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <775000>;
  			regulator-max-microvolt = <1275000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
@@ -187,6 +202,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
  			regulator-min-microvolt = <775000>;
  			regulator-max-microvolt = <1275000>;
 +			regulator-system-load = <1740000>;
++			regulator-settling-time-us = <10>;
  
 -			qcom,switch-mode-frequency = <1200000>;
 +			qcom,switch-mode-frequency = <500000>;
