@@ -1,0 +1,39 @@
+From f31cf7ab2bf0c830fe3bfe24a8b44c263ff2e65a Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Sat, 24 Sep 2022 15:08:40 +0200
+Subject: [PATCH] regulator: qcom_rpm: add support for settling time
+
+Some regulator may need a delay to settle the new voltage. The value can
+be provided by dt but the driver needs to have support for it.
+
+Add support for this by using the generic regulator_set_voltage_time_sel
+helper. When the delay value is not set in dt, no delay is applied.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/regulator/qcom_rpm-regulator.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/regulator/qcom_rpm-regulator.c b/drivers/regulator/qcom_rpm-regulator.c
+index 3c41b71a1f52..e3aea82a3d14 100644
+--- a/drivers/regulator/qcom_rpm-regulator.c
++++ b/drivers/regulator/qcom_rpm-regulator.c
+@@ -412,6 +412,7 @@ static const struct regulator_ops uV_ops = {
+ 
+ 	.set_voltage_sel = rpm_reg_set_uV_sel,
+ 	.get_voltage = rpm_reg_get_voltage,
++	.set_voltage_time_sel = regulator_set_voltage_time_sel,
+ 
+ 	.enable = rpm_reg_uV_enable,
+ 	.disable = rpm_reg_uV_disable,
+@@ -425,6 +426,7 @@ static const struct regulator_ops mV_ops = {
+ 
+ 	.set_voltage_sel = rpm_reg_set_mV_sel,
+ 	.get_voltage = rpm_reg_get_voltage,
++	.set_voltage_time_sel = regulator_set_voltage_time_sel,
+ 
+ 	.enable = rpm_reg_mV_enable,
+ 	.disable = rpm_reg_mV_disable,
+-- 
+2.37.2
+
