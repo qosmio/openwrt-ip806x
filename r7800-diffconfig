@@ -14,7 +14,6 @@ CONFIG_LIBC_USE_MUSL=y
 CONFIG_USE_MUSL=y
 CONFIG_SSP_SUPPORT=y
 CONFIG_LIBC="musl"
-CONFIG_TARGET_SUFFIX="muslgnueabi"
 
 =======
 CONFIG_IMAGEOPT=y
@@ -300,14 +299,8 @@ CONFIG_PACKAGE_kmod-qca-nss-ecm-standard=y
 CONFIG_PACKAGE_MAC80211_DEBUGFS=y
 CONFIG_PACKAGE_MAC80211_NSS_SUPPORT=y
 # Optional
-CONFIG_PACKAGE_kmod-qca-nss-drv-qdisc=m
-CONFIG_PACKAGE_kmod-qca-nss-cfi-cryptoapi=m
-CONFIG_PACKAGE_kmod-qca-nss-crypto=m
-CONFIG_PACKAGE_kmod-qca-nss-drv-igs=m
 CONFIG_PACKAGE_kmod-qca-nss-drv-pppoe=m
 CONFIG_PACKAGE_kmod-qca-nss-drv-pptp=m
-CONFIG_PACKAGE_nssinfo=m
-CONFIG_PACKAGE_kmod-qca-nss-drv-netlink=m
 
 # Packages
 CONFIG_PACKAGE_base-files=y
@@ -334,10 +327,7 @@ CONFIG_PACKAGE_grep=y
 CONFIG_PACKAGE_hostapd-openssl=y
 CONFIG_PACKAGE_htop=y
 CONFIG_PACKAGE_ip6tables-nft=y
-CONFIG_PACKAGE_ip6tables-zz-legacy=y
-CONFIG_PACKAGE_iptables-mod-physdev=y
 CONFIG_PACKAGE_iptables-nft=y
-CONFIG_PACKAGE_iptables-zz-legacy=y
 CONFIG_PACKAGE_ip-tiny=y
 CONFIG_PACKAGE_iwinfo=y
 CONFIG_PACKAGE_iw=y
