@@ -27,7 +27,7 @@ Tested-by: Jonathan McDowell <noodles@earth.li>
 +			cooling-min-state = <0>;
 +			cooling-max-state = <10>;
 +			#cooling-cells = <2>;
-+			cpu-idle-states = <&CPU_SPC>;
++			cpu-idle-states = <&CPU_WFI>;
  		};
  
  		cpu1: cpu@1 {
@@ -43,16 +43,16 @@ Tested-by: Jonathan McDowell <noodles@earth.li>
 +			cooling-min-state = <0>;
 +			cooling-max-state = <10>;
 +			#cooling-cells = <2>;
-+			cpu-idle-states = <&CPU_SPC>;
++			cpu-idle-states = <&CPU_WFI>;
 +		};
 +
 +		idle-states {
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc";
-+				status = "disabled";
-+				entry-latency-us = <400>;
-+				exit-latency-us = <900>;
-+				min-residency-us = <3000>;
++			CPU_WFI: wfi {
++				compatible = "qcom,idle-state-wfi";
++				idle-state-name = "Krait WFI";
++				entry-latency-us = <0>;
++				exit-latency-us = <0>;
++				min-residency-us = <0>;
 +			};
  		};
  
