@@ -47,14 +47,6 @@
 
 		mdio@90000 {
 			status = "okay";
-
-			/delete-node/ ethernet-phy@0;
-			/delete-node/ ethernet-phy@1;
-			/delete-node/ ethernet-phy@3;
-		};
-
-		ess-psgmii@98000 {
-			status = "okay";
 		};
 
 		tcsr@1949000 {
@@ -94,17 +86,6 @@
 		};
 
 		watchdog@b017000 {
-			status = "okay";
-		};
-
-		ess-switch@c000000 {
-			status = "okay";
-
-			switch_lan_bmp = <0x1e>;
-			switch_wan_bmp = <0x20>;
-		};
-
-		edma@c080000 {
 			status = "okay";
 		};
 	};
@@ -232,20 +213,6 @@
 	status = "okay";
 };
 
-&gmac0 {
-	qcom,phy_mdio_addr = <2>;
-	qcom,poll_required = <1>;
-	nvmem-cell-names = "mac-address";
-	nvmem-cells = <&macaddr_art_6>;
-};
-
-&gmac1 {
-	qcom,phy_mdio_addr = <4>;
-	qcom,poll_required = <1>;
-	nvmem-cell-names = "mac-address";
-	nvmem-cells = <&macaddr_art_0>;
-};
-
 &tlmm {
 	serial0_pins: serial0_pinmux {
 		mux {
@@ -283,6 +250,18 @@
 
 &usb3_ss_phy {
 	status = "okay";
+};
+
+&ethphy0 {
+	status = "disabled";
+};
+
+&ethphy1 {
+	status = "disabled";
+};
+
+&ethphy3 {
+	status = "disabled";
 };
 
 &wifi0 {
