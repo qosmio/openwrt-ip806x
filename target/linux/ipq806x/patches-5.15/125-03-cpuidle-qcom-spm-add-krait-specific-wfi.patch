@@ -1,0 +1,82 @@
+From 0863141455934f78a6781c2867e550070eaff69c Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Mon, 19 Sep 2022 14:56:35 +0200
+Subject: [PATCH 3/3] cpuidle: qcom-spm: add krait specific wfi
+
+Add krait specific wfi cpuidle that use the specific krait idle code.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/cpuidle/cpuidle-qcom-spm.c | 28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-qcom-spm.c b/drivers/cpuidle/cpuidle-qcom-spm.c
+index beedf22cbe78..8468d34dd33e 100644
+--- a/drivers/cpuidle/cpuidle-qcom-spm.c
++++ b/drivers/cpuidle/cpuidle-qcom-spm.c
+@@ -25,6 +25,8 @@
+ 
+ #include "dt_idle_states.h"
+ 
++#include <asm/mach/krait-idle.h>
++
+ struct cpuidle_qcom_spm_data {
+ 	struct cpuidle_driver cpuidle_driver;
+ 	struct spm_driver_data *spm;
+@@ -58,7 +60,7 @@ static int qcom_cpu_spc(struct spm_driver_data *drv)
+ 	return ret;
+ }
+ 
+-static int spm_enter_idle_state(struct cpuidle_device *dev,
++static int spm_enter_idle_state_spc(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
+ {
+ 	struct cpuidle_qcom_spm_data *data = container_of(drv, struct cpuidle_qcom_spm_data,
+@@ -67,21 +69,27 @@ static int spm_enter_idle_state(struct cpuidle_device *dev,
+ 	return CPU_PM_CPU_IDLE_ENTER_PARAM(qcom_cpu_spc, idx, data->spm);
+ }
+ 
++static int spm_enter_idle_state_wfi(struct cpuidle_device *dev,
++				struct cpuidle_driver *drv, int idx)
++{
++	arm_krait_idle();
++	return idx;
++}
++
+ static struct cpuidle_driver qcom_spm_idle_driver = {
+ 	.name = "qcom_spm",
+ 	.owner = THIS_MODULE,
+ 	.states[0] = {
+-		.enter			= spm_enter_idle_state,
+-		.exit_latency		= 1,
+-		.target_residency	= 1,
+-		.power_usage		= UINT_MAX,
+-		.name			= "WFI",
+-		.desc			= "ARM WFI",
+-	}
++		.enter			= spm_enter_idle_state_wfi,
++	},
++	.states[1] = {
++		.enter			= spm_enter_idle_state_spc,
++	},
+ };
+ 
+ static const struct of_device_id qcom_idle_state_match[] = {
+-	{ .compatible = "qcom,idle-state-spc", .data = spm_enter_idle_state },
++	{ .compatible = "qcom,idle-state-wfi", .data = &spm_enter_idle_state_wfi },
++	{ .compatible = "qcom,idle-state-spc", .data = &spm_enter_idle_state_spc },
+ 	{ },
+ };
+ 
+@@ -118,7 +126,7 @@ static int spm_cpuidle_register(struct device *cpuidle_dev, int cpu)
+ 	data->cpuidle_driver.cpumask = (struct cpumask *)cpumask_of(cpu);
+ 
+ 	ret = dt_init_idle_driver(&data->cpuidle_driver,
+-				  qcom_idle_state_match, 1);
++				  qcom_idle_state_match, 0);
+ 	if (ret <= 0)
+ 		return ret ? : -ENODEV;
+ 
+-- 
+2.37.2
+
