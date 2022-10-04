@@ -1,0 +1,26 @@
+--- a/arch/arm/boot/dts/qcom-ipq8064-unifi-ac-hd.dts
++++ b/arch/arm/boot/dts/qcom-ipq8064-unifi-ac-hd.dts
+@@ -86,10 +86,6 @@
+ 	};
+ };
+ 
+-&CPU_SPC {
+-	status = "disabled";
+-};
+-
+ &gsbi5 {
+ 	status = "okay";
+ 
+--- a/arch/arm/boot/dts/qcom-ipq8064-wg2600hp.dts
++++ b/arch/arm/boot/dts/qcom-ipq8064-wg2600hp.dts
+@@ -127,10 +127,6 @@
+ 	};
+ };
+ 
+-&CPU_SPC {
+-	status = "disabled";
+-};
+-
+ &adm_dma {
+ 	status = "okay";
+ };
