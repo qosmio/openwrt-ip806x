@@ -91,7 +91,40 @@
  				 unsigned int chan_sz);
 --- a/drivers/net/ppp/pptp.c
 +++ b/drivers/net/ppp/pptp.c
-@@ -748,20 +748,6 @@ int pptp_session_find(struct pptp_opt *o
+@@ -92,32 +92,6 @@ static int lookup_chan_dst(u16 call_id,
+ 	return i < MAX_CALLID;
+ }
+ 
+-/* Search a pptp session based on local call id, local and remote ip address */
+-static int lookup_session_src(struct pptp_opt *opt, u16 call_id, __be32 daddr, __be32 saddr)
+-{
+-	struct pppox_sock *sock;
+-	int i = 1;
+-
+-	rcu_read_lock();
+-	for_each_set_bit_from(i, callid_bitmap, MAX_CALLID) {
+-		sock = rcu_dereference(callid_sock[i]);
+-		if (!sock)
+-			continue;
+-
+-		if (sock->proto.pptp.src_addr.call_id == call_id &&
+-		    sock->proto.pptp.dst_addr.sin_addr.s_addr == daddr &&
+-		    sock->proto.pptp.src_addr.sin_addr.s_addr == saddr) {
+-			sock_hold(sk_pppox(sock));
+-			memcpy(opt, &sock->proto.pptp, sizeof(struct pptp_opt));
+-			sock_put(sk_pppox(sock));
+-			rcu_read_unlock();
+-			return 0;
+-		}
+-	}
+-	rcu_read_unlock();
+-	return -EINVAL;
+-}
+-
+ /* Search a pptp session based on peer call id and peer ip address */
+ static int lookup_session_dst(struct pptp_opt *opt, u16 call_id, __be32 d_addr)
+ {
+@@ -748,20 +722,6 @@ int pptp_session_find(struct pptp_opt *o
  }
  EXPORT_SYMBOL(pptp_session_find);
  
