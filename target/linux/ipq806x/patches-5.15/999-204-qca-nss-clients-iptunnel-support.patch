@@ -32,7 +32,7 @@
 + */
 +void ip6_update_offload_stats(struct net_device *dev, void *ptr)
 +{
-+	struct pcpu_sw_netstats *tstats = per_cpu_ptr(dev->tstats, 0);
++	struct pcpu_sw_netstats *tstats = this_cpu_ptr(dev->tstats);
 +	const struct pcpu_sw_netstats *offload_stats =
 +					(struct pcpu_sw_netstats *)ptr;
 +
@@ -58,7 +58,7 @@
 +/* QCA NSS Clients Support - Start */
 +void ipip6_update_offload_stats(struct net_device *dev, void *ptr)
 +{
-+	struct pcpu_sw_netstats *tstats = per_cpu_ptr(dev->tstats, 0);
++	struct pcpu_sw_netstats *tstats = this_cpu_ptr(dev->tstats);
 +	const struct pcpu_sw_netstats *offload_stats =
 +					(struct pcpu_sw_netstats *)ptr;
 +
