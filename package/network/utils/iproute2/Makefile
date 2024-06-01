@@ -168,7 +168,7 @@ endef
 
 TARGET_LDFLAGS += -Wl,--as-needed
 TARGET_CPPFLAGS += -I$(STAGING_DIR)/usr/include/libnl-tiny
-
+TARGET_CFLAGS+=-Wno-error=incompatible-pointer-types
 MAKE_FLAGS += \
 	KERNEL_INCLUDE="$(LINUX_DIR)/include/uapi" \
 	SHARED_LIBS=$(SHARED_LIBS) \
