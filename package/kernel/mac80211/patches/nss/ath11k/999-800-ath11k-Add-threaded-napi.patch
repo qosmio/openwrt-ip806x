@@ -18,22 +18,20 @@
  
  	/* TCL Completion, REO Dest, ERR, Exception and h2rxdma rings are offloaded
  	 * to nss when its enabled, hence don't enable these interrupts
-@@ -545,9 +545,14 @@ static int ath11k_ahb_config_ext_irq(str
+@@ -544,9 +544,12 @@ static int ath11k_ahb_config_ext_irq(str
+ 		irq_grp->napi_ndev = alloc_netdev_dummy(0);
  		if (!irq_grp->napi_ndev)
  			return -ENOMEM;
- 
 +		snprintf(irq_grp->napi_ndev->name, sizeof(irq_grp->napi_ndev->name), "%s%d:%d",
 +			 "ath11k_ahb", devidx, i);
-+
+ 
  		netif_napi_add(irq_grp->napi_ndev, &irq_grp->napi,
  			       ath11k_ahb_ext_grp_napi_poll);
- 
 +		dev_set_threaded(irq_grp->napi_ndev, true);
-+
+ 
  		for (j = 0; j < ATH11K_EXT_IRQ_NUM_MAX; j++) {
  			if (!nss_offload && ab->hw_params.ring_mask->tx[i] & BIT(j)) {
- 				irq_grp->irqs[num_irq++] =
-@@ -610,6 +615,8 @@ static int ath11k_ahb_config_ext_irq(str
+@@ -610,6 +613,8 @@ static int ath11k_ahb_config_ext_irq(str
  		}
  	}
  
@@ -62,22 +60,20 @@
  
  	ret = ath11k_pcic_get_user_msi_assignment(ab, "DP", &num_vectors,
  						  &user_base_data,
-@@ -586,9 +586,14 @@ static int ath11k_pcic_ext_irq_config(st
+@@ -585,9 +585,12 @@ static int ath11k_pcic_ext_irq_config(st
+ 			ret = -ENOMEM;
  			goto fail_allocate;
  		}
- 
 +		snprintf(irq_grp->napi_ndev->name, sizeof(irq_grp->napi_ndev->name), "%s%d:%d",
 +			 "ath11k_pci", devidx, i);
-+
+ 
  		netif_napi_add(irq_grp->napi_ndev, &irq_grp->napi,
  			       ath11k_pcic_ext_grp_napi_poll);
- 
 +		dev_set_threaded(irq_grp->napi_ndev, true);
-+
+ 
  		/* tcl, reo, rx_err, wbm release, rxdma rings are offloaded to nss. */
  		if (ab->nss.enabled &&
- 		    !(ab->hw_params.ring_mask->reo_status[i] ||
-@@ -640,6 +645,8 @@ static int ath11k_pcic_ext_irq_config(st
+@@ -640,6 +643,8 @@ static int ath11k_pcic_ext_irq_config(st
  		ath11k_pcic_ext_grp_disable(irq_grp);
  	}
  

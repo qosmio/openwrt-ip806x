@@ -1,0 +1,74 @@
+From: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
+Date: Mon, 29 Apr 2024 13:06:24 +0530
+Subject: [PATCHv5] wifi: ath11k: skip status ring entry processing
+
+If STATUS_BUFFER_DONE is not set for a monitor status ring entry,
+we don't process the status ring until STATUS_BUFFER_DONE set
+for that status ring entry.
+
+During LMAC reset it may happen that hardware will not write
+STATUS_BUFFER_DONE tlv in status buffer, in that case we end up
+waiting for STATUS_BUFFER_DONE leading to backpressure on monitor
+status ring.
+
+To fix the issue, when HP(Head Pointer) + 1 entry is peeked and if DMA
+is not done and if HP + 2 entry's DMA done is set,
+replenish HP + 1 entry and start processing in next interrupt.
+If HP + 2 entry's DMA done is not set, poll onto HP + 1 entry DMA
+done to be set.
+
+Also, during monitor attach HP points to the end of the ring and
+TP(Tail Pointer) points to the start of the ring.
+Using ath11k_hal_srng_src_peek() may result in processing invalid buffer
+for the very first interrupt. Since, HW starts writing buffer from TP.
+
+To avoid this issue call ath11k_hal_srng_src_next_peek() instead of
+calling ath11k_hal_srng_src_peek().
+
+Tested-on: IPQ5018 hw1.0 AHB WLAN.HK.2.6.0.1-00861-QCAHKSWPL_SILICONZ-1
+
+Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
+Co-developed-by: Tamizh Chelvam Raja <quic_tamizhr@quicinc.com>
+Signed-off-by: Tamizh Chelvam Raja <quic_tamizhr@quicinc.com>
+Acked-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+---
+v5:
+  * Updated copyright info in dp_rx.c
+
+ drivers/net/wireless/ath/ath11k/dp_rx.c | 9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+--- a/drivers/net/wireless/ath/ath11k/dp_rx.c
++++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
+@@ -3734,8 +3734,7 @@ static int ath11k_dp_rx_reap_mon_status_
+ 	ath11k_hal_srng_access_begin(ab, srng);
+ 	while (*budget) {
+ 		*budget -= 1;
+-		rx_mon_status_desc =
+-			ath11k_hal_srng_src_peek(ab, srng);
++		rx_mon_status_desc = ath11k_hal_srng_src_peek(ab, srng);
+ 		if (!rx_mon_status_desc) {
+ 			pmon->buf_state = DP_MON_STATUS_REPLINISH;
+ 			break;
+@@ -3787,8 +3786,12 @@ static int ath11k_dp_rx_reap_mon_status_
+ 
+ 				reap_status = ath11k_dp_rx_mon_buf_done(ab, srng,
+ 									rx_ring);
+-				if (reap_status == DP_MON_STATUS_NO_DMA)
++				if (reap_status == DP_MON_STATUS_NO_DMA) {
+ 					continue;
++				} else if (reap_status == DP_MON_STATUS_REPLINISH) {
++					ath11k_warn(ab, "mon status DONE not set %lx, buf_id %d\n",
++						    FIELD_GET(HAL_TLV_HDR_TAG, tlv->tl),
++						    buf_id);
+ 
+ 				spin_lock_bh(&rx_ring->idr_lock);
+ 				idr_remove(&rx_ring->bufs_idr, buf_id);
+@@ -3801,6 +3804,7 @@ static int ath11k_dp_rx_reap_mon_status_
+ 				dev_kfree_skb_any(skb);
+ 				pmon->buf_state = DP_MON_STATUS_REPLINISH;
+ 				goto move_next;
++				}
+ 			}
+ 
+ 			spin_lock_bh(&rx_ring->idr_lock);

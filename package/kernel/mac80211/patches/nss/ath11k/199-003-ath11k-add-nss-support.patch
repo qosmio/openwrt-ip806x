@@ -624,7 +624,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  exit:
  	mutex_unlock(&ar->conf_mutex);
  	return ret;
-@@ -6099,10 +6162,14 @@ static void ath11k_mac_op_tx(struct ieee
+@@ -6102,10 +6165,14 @@ static void ath11k_mac_op_tx(struct ieee
  	if (control->sta)
  		arsta = ath11k_sta_to_arsta(control->sta);
  
@@ -640,7 +640,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  }
  
-@@ -6124,6 +6191,8 @@ static int ath11k_mac_config_mon_status_
+@@ -6127,6 +6194,8 @@ static int ath11k_mac_config_mon_status_
  
  	if (enable) {
  		tlv_filter = ath11k_mac_mon_status_filter_default;
@@ -649,7 +649,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  		if (ath11k_debugfs_rx_filter(ar))
  			tlv_filter.rx_filter = ath11k_debugfs_rx_filter(ar);
  	}
-@@ -6422,7 +6491,7 @@ static int ath11k_mac_setup_vdev_create_
+@@ -6425,7 +6494,7 @@ static int ath11k_mac_setup_vdev_create_
  	return 0;
  }
  
@@ -658,7 +658,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  					     struct ieee80211_vif *vif)
  {
  	struct ath11k *ar = hw->priv;
-@@ -6468,6 +6537,8 @@ static void ath11k_mac_op_update_vif_off
+@@ -6471,6 +6540,8 @@ static void ath11k_mac_op_update_vif_off
  			    arvif->vdev_id, ret);
  		vif->offload_flags &= ~IEEE80211_OFFLOAD_DECAP_ENABLED;
  	}
@@ -667,7 +667,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  }
  
  static bool ath11k_mac_vif_ap_active_any(struct ath11k_base *ab)
-@@ -6598,6 +6669,8 @@ static int ath11k_mac_vdev_delete(struct
+@@ -6601,6 +6672,8 @@ static int ath11k_mac_vdev_delete(struct
  
  	reinit_completion(&ar->vdev_delete_done);
  
@@ -676,7 +676,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	ret = ath11k_wmi_vdev_delete(ar, arvif->vdev_id);
  	if (ret) {
  		ath11k_warn(ar->ab, "failed to delete WMI vdev %d: %d\n",
-@@ -6740,7 +6813,34 @@ static int ath11k_mac_op_add_interface(s
+@@ -6743,7 +6816,34 @@ static int ath11k_mac_op_add_interface(s
  	list_add(&arvif->list, &ar->arvifs);
  	spin_unlock_bh(&ar->data_lock);
  
@@ -712,7 +712,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	nss = get_num_chains(ar->cfg_tx_chainmask) ? : 1;
  	ret = ath11k_wmi_vdev_set_param_cmd(ar, arvif->vdev_id,
-@@ -6870,6 +6970,7 @@ err_peer_del:
+@@ -6873,6 +6973,7 @@ err_peer_del:
  	}
  
  err_vdev_del:
@@ -720,7 +720,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	ath11k_mac_vdev_delete(ar, arvif);
  	spin_lock_bh(&ar->data_lock);
  	list_del(&arvif->list);
-@@ -7387,6 +7488,10 @@ ath11k_mac_update_vif_chan(struct ath11k
+@@ -7390,6 +7491,10 @@ ath11k_mac_update_vif_chan(struct ath11k
  				    arvif->vdev_id, ret);
  			continue;
  		}
@@ -731,7 +731,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	/* Restart the internal monitor vdev on new channel */
-@@ -9014,6 +9119,8 @@ static void ath11k_mac_op_sta_statistics
+@@ -9017,6 +9122,8 @@ static void ath11k_mac_op_sta_statistics
  		sinfo->signal_avg += ATH11K_DEFAULT_NOISE_FLOOR;
  
  	sinfo->filled |= BIT_ULL(NL80211_STA_INFO_SIGNAL_AVG);
@@ -740,7 +740,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  }
  
  #if IS_ENABLED(CONFIG_IPV6)
-@@ -9711,6 +9818,7 @@ static const struct ieee80211_ops ath11k
+@@ -9714,6 +9821,7 @@ static const struct ieee80211_ops ath11k
  	.update_vif_offload		= ath11k_mac_op_update_vif_offload,
  	.config                         = ath11k_mac_op_config,
  	.bss_info_changed               = ath11k_mac_op_bss_info_changed,
@@ -748,7 +748,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	.configure_filter		= ath11k_mac_op_configure_filter,
  	.hw_scan                        = ath11k_mac_op_hw_scan,
  	.cancel_hw_scan                 = ath11k_mac_op_cancel_hw_scan,
-@@ -10149,7 +10257,8 @@ static int __ath11k_mac_register(struct
+@@ -10152,7 +10260,8 @@ static int __ath11k_mac_register(struct
  		ieee80211_hw_set(ar->hw, TX_AMPDU_SETUP_IN_HW);
  		ieee80211_hw_set(ar->hw, SUPPORTS_REORDERING_BUFFER);
  		ieee80211_hw_set(ar->hw, SUPPORTS_AMSDU_IN_AMPDU);
@@ -758,7 +758,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	ar->hw->wiphy->features |= NL80211_FEATURE_STATIC_SMPS;
-@@ -10264,6 +10373,9 @@ static int __ath11k_mac_register(struct
+@@ -10267,6 +10376,9 @@ static int __ath11k_mac_register(struct
  	    ab->hw_params.bios_sar_capa)
  		ar->hw->wiphy->sar_capa = ab->hw_params.bios_sar_capa;
  
