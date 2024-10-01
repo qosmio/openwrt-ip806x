@@ -92,7 +92,7 @@ Supported devices include, but are not limited to:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/qosmio/openwrt-ipq -b 24.10-nss
+   git clone https://github.com/qosmio/openwrt-ipq -b 24.10-nss-mx4300
    cd openwrt-ipq
    ```
 2. Update feeds:
