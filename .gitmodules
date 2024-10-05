@@ -10,3 +10,6 @@
 [submodule "package/luci-app-alwaysonline"]
 	path = package/luci-app-alwaysonline
 	url = https://github.com/muink/luci-app-alwaysonline.git
+[submodule "package/luci-app-internet-detector"]
+	path = package/luci-app-internet-detector
+	url = https://github.com/gSpotx2f/luci-app-internet-detector
