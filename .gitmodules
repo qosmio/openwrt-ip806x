@@ -7,3 +7,6 @@
 [submodule "package/luci-app-temp-status"]
 	path = package/luci-app-temp-status
 	url = https://github.com/gSpotx2f/luci-app-temp-status
+[submodule "package/luci-app-alwaysonline"]
+	path = package/luci-app-alwaysonline
+	url = https://github.com/muink/luci-app-alwaysonline.git
