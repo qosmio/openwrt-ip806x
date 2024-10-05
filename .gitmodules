@@ -13,3 +13,6 @@
 [submodule "package/luci-app-internet-detector"]
 	path = package/luci-app-internet-detector
 	url = https://github.com/gSpotx2f/luci-app-internet-detector
+[submodule "package/luci-app-netspeedtest"]
+	path = package/luci-app-netspeedtest
+	url = https://github.com/muink/luci-app-netspeedtest.git
