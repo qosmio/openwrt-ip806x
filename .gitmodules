@@ -4,3 +4,6 @@
 [submodule "package/luci-theme-argon"]
 	path = package/luci-theme-argon
 	url = https://github.com/jerrykuku/luci-theme-argon
+[submodule "package/luci-app-temp-status"]
+	path = package/luci-app-temp-status
+	url = https://github.com/gSpotx2f/luci-app-temp-status
