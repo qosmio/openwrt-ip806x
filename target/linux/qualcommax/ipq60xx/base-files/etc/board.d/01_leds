@@ -7,7 +7,8 @@ board_config_update
 board=$(board_name)
 
 case "$board" in
-jdcloud,ax1800-pro)
+jdcloud,ax1800-pro|\
+jdcloud,ax6600)
     ucidef_set_led_netdev "wan" "WAN" "green:wan" "eth3" "link"
     ;;
 yuncore,fap650)
