@@ -48,7 +48,7 @@ endef
 TARGET_DEVICES += arcadyan_aw1000
 
 define Device/asus_rt-ax89x
-       DEVICE_VENDOR := Asus
+	DEVICE_VENDOR := Asus
 	DEVICE_MODEL := RT-AX89X
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
@@ -156,6 +156,21 @@ define Device/edimax_cax1800
 endef
 TARGET_DEVICES += edimax_cax1800
 
+define Device/linksys_homewrk
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Linksys
+	DEVICE_MODEL := HomeWRK
+	DEVICE_DTS_CONFIG := config@oak03
+	BLOCKSIZE := 256k
+	PAGESIZE := 4096
+	IMAGE_SIZE := 475m
+	NAND_SIZE := 1024m
+	SOC := ipq8174
+	DEVICE_PACKAGES += kmod-leds-pca963x ipq-wifi-linksys_homewrk
+endef
+TARGET_DEVICES += linksys_homewrk
+
 define Device/linksys_mx
 	$(call Device/FitImage)
 	DEVICE_VENDOR := Linksys
@@ -170,12 +185,17 @@ define Device/linksys_mx
 	DEVICE_PACKAGES := kmod-leds-pca963x
 endef
 
-define Device/linksys_mx4200v1
+define Device/linksys_mx4x00
 	$(call Device/linksys_mx)
+	SOC := ipq8174
+	DEVICE_PACKAGES += ipq-wifi-linksys_mx4200
+endef
+
+define Device/linksys_mx4200v1
+	$(call Device/linksys_mx4x00)
 	DEVICE_MODEL := MX4200
 	DEVICE_VARIANT := v1
-	SOC := ipq8174
-	DEVICE_PACKAGES += ipq-wifi-linksys_mx4200 kmod-bluetooth
+	DEVICE_PACKAGES += kmod-bluetooth
 endef
 TARGET_DEVICES += linksys_mx4200v1
 
@@ -184,6 +204,17 @@ define Device/linksys_mx4200v2
 	DEVICE_VARIANT := v2
 endef
 TARGET_DEVICES += linksys_mx4200v2
+
+define Device/linksys_mx4300
+	$(call Device/linksys_mx4x00)
+	DEVICE_MODEL := MX4300
+	BLOCKSIZE := 256k
+	PAGESIZE := 4096
+	KERNEL_SIZE := 8192k
+	IMAGE_SIZE := 171264k
+	NAND_SIZE := 1024m
+endef
+TARGET_DEVICES += linksys_mx4300
 
 define Device/linksys_mx5300
 	$(call Device/linksys_mx)
